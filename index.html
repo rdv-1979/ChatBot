@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        #response{
+            margin-top: 20px;
+            padding: 10px;
+            min-height: 50px;
+        }
+        #response h3{
+            color: #333;
+            font-size: 1.2rem;
+        }
+        #response strong{
+            color: #d9534f;
+        }
+        #response ul{
+            padding-left: 20px;
+        }
+        #response li{
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Free ChatBot</h2>
+        <div class="form-group">
+            <input type="text" class="form-control" id="userInput" placeholder="Enter tour question">
+        </div>
+        <button class="btn btn-success" onclick="sendMessage()">Ask!</button>
+        <div id="response"></div>
+    </div>
+    <script>
+        async function sendMessage(){
+            const input = document.getElementById('userInput').value;
+            const responseDiv = document.getElementById('response');
+
+            if(!input){
+                responseDiv.innerHTML = 'Please enter a message.';
+                return;
+            }
+            responseDiv.innerHTML = 'Loading...';
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer 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",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "model": "mistralai/mistral-7b-instruct:free",
+                    "messages": [
+                    {
+                        "role": "user",
+                        "content": input,
+                    }
+                    ]
+                })
+                });
+                const data = await response.json();
+                console.log(data);
+                const markdownText = data.choices?.[0]?.message?.content || 'Sin respuesta';
+                responseDiv.innerHTML = marked.parse(markdownText);
+            } catch (error) {
+                responseDiv.innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
